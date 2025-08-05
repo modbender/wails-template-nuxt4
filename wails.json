@@ -1,0 +1,22 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "wails-nuxt4-template",
+  "outputfilename": "wails-nuxt4-app",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "http://localhost:3000",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "info": {
+    "productName": "Wails Nuxt 4 Template",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright © 2025",
+    "comments": "A modern desktop application template built with Wails and Nuxt 4"
+  },
+  "nsisType": "multiple",
+  "obfuscated": false,
+  "garbleargs": ""
+}
