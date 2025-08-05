@@ -96,6 +96,8 @@
 </template>
 
 <script setup lang="ts">
+import type { AppInfo } from '~/types/wails';
+
 // Page metadata
 useHead({
   title: 'Home',
@@ -104,7 +106,7 @@ useHead({
 // Reactive data
 const name = ref('');
 const greeting = ref('');
-const appInfo = ref(null);
+const appInfo = ref<AppInfo | null>(null);
 
 // Methods
 const greetUser = async () => {
@@ -136,9 +138,9 @@ const getAppInfo = async () => {
       appInfo.value = {
         name: 'Wails Nuxt 4 Template',
         version: '1.0.0',
+        description: 'A modern desktop application built with Wails and Nuxt 4',
         framework: 'Nuxt 4',
         backend: 'Go + Wails v2',
-        mode: 'Development',
       };
     }
   } catch (error) {

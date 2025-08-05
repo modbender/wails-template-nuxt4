@@ -20,7 +20,8 @@
   "devDependencies": {
     "@nuxt/devtools": "^1.6.0",
     "@nuxt/typescript-build": "^3.0.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vue-tsc": "^3.0.5"
   },
   "engines": {
     "node": ">=18.0.0"

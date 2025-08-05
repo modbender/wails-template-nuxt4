@@ -21,11 +21,6 @@ export default defineNuxtConfig({
   // Generate static files for Wails embedding
   ssr: false,
 
-  // Output directory for Wails
-  generate: {
-    dir: 'dist',
-  },
-
   // App configuration
   app: {
     head: {

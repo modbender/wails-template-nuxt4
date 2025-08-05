@@ -1,21 +1,34 @@
 <template>
   <div class="wails-demo">
     <h3>🔗 Wails Integration Demo</h3>
-    
+
     <!-- Connection Status -->
-    <div class="status-card" :class="{ connected: isWailsConnected, disconnected: !isWailsConnected }">
+    <div
+      class="status-card"
+      :class="{ connected: isWailsConnected, disconnected: !isWailsConnected }"
+    >
       <div class="status-indicator"></div>
-      <span>{{ isWailsConnected ? 'Connected to Wails Runtime' : 'Running in Browser Mode' }}</span>
+      <span>{{
+        isWailsConnected
+          ? 'Connected to Wails Runtime'
+          : 'Running in Browser Mode'
+      }}</span>
+      <div v-if="!isWailsConnected" class="browser-notice">
+        <small
+          >💡 To test Wails APIs, open the app at:
+          <strong>http://localhost:34115</strong></small
+        >
+      </div>
     </div>
 
     <!-- API Testing -->
     <div class="demo-section">
       <h4>Backend API Testing</h4>
-      
+
       <div class="input-group">
-        <input 
-          v-model="testInput" 
-          type="text" 
+        <input
+          v-model="testInput"
+          type="text"
           placeholder="Enter test message"
           class="demo-input"
           @keyup.enter="testGreeting"
@@ -54,81 +67,109 @@
 </template>
 
 <script setup lang="ts">
+import type { SystemInfo } from '~/types/wails';
+
 // Reactive state
-const isWailsConnected = ref(false)
-const testInput = ref('Hello from Nuxt 4!')
-const apiResponse = ref('')
-const systemInfo = ref(null)
-const loading = ref(false)
-const error = ref('')
+const isWailsConnected = ref(false);
+const testInput = ref('Hello from Nuxt 4!');
+const apiResponse = ref('');
+const systemInfo = ref<SystemInfo | null>(null);
+const loading = ref(false);
+const error = ref('');
 
 // Check Wails connection on mount
 onMounted(() => {
-  checkWailsConnection()
-})
+  checkWailsConnection();
+});
 
 // Methods
 const checkWailsConnection = () => {
-  if (typeof window !== 'undefined' && window.wails) {
-    isWailsConnected.value = true
-    console.log('Wails runtime detected and connected')
+  if (
+    typeof window !== 'undefined' &&
+    (window.wails || window.go || window.runtime)
+  ) {
+    isWailsConnected.value = true;
+    console.log('Wails runtime detected and connected');
+    console.log('Available APIs:', {
+      wails: !!window.wails,
+      go: !!window.go,
+      runtime: !!window.runtime,
+    });
   } else {
-    isWailsConnected.value = false
-    console.log('Running in browser mode - Wails runtime not available')
+    isWailsConnected.value = false;
+    console.log('Running in browser mode - Wails runtime not available');
   }
-}
+};
 
 const testGreeting = async () => {
   if (!testInput.value.trim()) {
-    error.value = 'Please enter a test message'
-    return
+    error.value = 'Please enter a test message';
+    return;
   }
 
-  loading.value = true
-  error.value = ''
-  
+  loading.value = true;
+  error.value = '';
+
   try {
     if (isWailsConnected.value) {
-      // Call actual Wails API
-      apiResponse.value = await window.wails.App.Greet(testInput.value)
+      // Try different Wails API access methods
+      if (window.wails?.App?.Greet) {
+        apiResponse.value = await window.wails.App.Greet(testInput.value);
+      } else if (window.go?.main?.App?.Greet) {
+        apiResponse.value = await window.go.main.App.Greet(testInput.value);
+      } else {
+        throw new Error('Wails API not found - methods not available');
+      }
     } else {
       // Simulate API call for browser development
-      await new Promise(resolve => setTimeout(resolve, 500))
-      apiResponse.value = `Mock Response: Hello ${testInput.value}, It's show time! (Browser Mode)`
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      apiResponse.value = `Mock Response: Hello ${testInput.value}, It's show time! (Browser Mode)`;
     }
   } catch (err) {
-    error.value = `API Error: ${err.message || err}`
-    console.error('API call failed:', err)
+    error.value = `API Error: ${(err as Error).message || err}`;
+    console.error('API call failed:', err);
+    console.error(
+      'Available window objects:',
+      Object.keys(window).filter((key) =>
+        ['wails', 'go', 'runtime'].includes(key)
+      )
+    );
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const getSystemInfo = async () => {
-  loading.value = true
-  error.value = ''
-  
+  loading.value = true;
+  error.value = '';
+
   try {
     if (isWailsConnected.value) {
-      // Get real system info from Wails
-      systemInfo.value = await window.wails.App.GetSystemInfo()
+      // Try different Wails API access methods
+      if (window.wails?.App?.GetSystemInfo) {
+        systemInfo.value = await window.wails.App.GetSystemInfo();
+      } else if (window.go?.main?.App?.GetSystemInfo) {
+        systemInfo.value = await window.go.main.App.GetSystemInfo();
+      } else {
+        throw new Error('Wails GetSystemInfo API not found');
+      }
     } else {
       // Mock system info for browser
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise((resolve) => setTimeout(resolve, 300));
       systemInfo.value = {
         platform: 'browser',
         runtime: 'development',
         ready: true,
-        mode: 'mock'
-      }
+        mode: 'mock',
+      };
     }
   } catch (err) {
-    error.value = `System Info Error: ${err.message || err}`
-    console.error('System info failed:', err)
+    error.value = `System Info Error: ${(err as Error).message || err}`;
+    console.error('System info failed:', err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
@@ -171,6 +212,14 @@ const getSystemInfo = async () => {
 
 .disconnected .status-indicator {
   background: #f59e0b;
+}
+
+.browser-notice {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 4px;
+  border-left: 3px solid #f59e0b;
 }
 
 .demo-section {
@@ -222,7 +271,8 @@ const getSystemInfo = async () => {
   cursor: not-allowed;
 }
 
-.response-box, .error-box {
+.response-box,
+.error-box {
   padding: 1rem;
   border-radius: 6px;
   margin-top: 1rem;
