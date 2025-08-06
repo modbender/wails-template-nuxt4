@@ -84,6 +84,9 @@ jspm_packages/
 # Output of 'npm pack'
 *.tgz
 
+# Package manager checksums (prevent false positive security alerts)
+*.md5
+
 # Yarn Integrity file
 .yarn-integrity
 
